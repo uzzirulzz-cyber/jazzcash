@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     description: seo.ogDescription,
     images: [
       {
-        url: "/logo.svg",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "PlayBeat Arena — Live Sports Streaming",
@@ -53,12 +53,16 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: seo.ogTitle,
     description: seo.ogDescription,
-    images: ["/logo.svg"],
+    images: ["/og-image.png"],
     creator: "@playbeat",
   },
   icons: {
-    icon: "/logo.svg",
-    apple: "/logo.svg",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
   },
   manifest: "/manifest.webmanifest",
   verification: {

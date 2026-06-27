@@ -45,8 +45,8 @@ export function AuthDialog() {
           </button>
         </DialogClose>
         <DialogHeader>
-          <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl brand-bg">
-            <Trophy className="h-6 w-6" />
+          <div className="mb-2 flex h-12 w-12 items-center justify-center">
+            <img src="/logo.png" alt="PlayBeat Arena" className="h-12 w-12 rounded-xl object-contain" />
           </div>
           <DialogTitle className="text-xl">
             {isSignup ? 'Create your account' : 'Welcome back'}
