@@ -73,3 +73,28 @@ Stage Summary:
 - SEO verified in DOM: OG:title, twitter:card=summary_large_image, JSON-LD script present
 - sitemap.xml + robots.txt + manifest.webmanifest all return 200
 - Lint clean, dev server running, browser-verified across Home/Football/Admin Revenue/Admin Ads
+
+---
+Task ID: AUTH-NOTIFY-LIVE
+Agent: main
+Task: User profiles + signup, channel notifications, no paywall, curated live, URL routing
+
+Work Log:
+- Schema: added email/password/avatar to User, ChannelSubscription (notify on live), Notification models with Channel relation
+- Auth lib (scrypt hash/verify, session cookie management), /api/auth/signup, /login, /logout, /me, /api/profile (GET+PATCH)
+- Notifications API: /api/notifications (list+unread count, mark read), /api/channels/[id]/notify (toggle subscribe + create welcome notification)
+- Updated channels/home/search APIs to include isSubscribed in DTO
+- Removed paywall: seedMonetization now only creates Free plan (disabled all paid tiers), replaced PremiumUpsell with FreeAccessBanner
+- /live page curated: added ?curated=true filter (featured OR trending OR liveNow), sorted by viewCount
+- URL routing: store syncs view with ?view= param, browser back/forward works via popstate
+- Frontend: AuthDialog (signup/login modal), UserMenu (avatar dropdown with profile/admin/logout), NotificationsBell (polls every 30s, unread badge, mark all read), ProfileView (stats + edit form + favorites grid), NotifyMe bell button on channel cards + in IPTV player
+- Fixed Notification→Channel relation (was missing, caused 500)
+
+Stage Summary:
+- Signup verified: "Arena Fan" account created, user menu shows avatar with initials, "Sign up" button replaced by avatar
+- Notifications verified: clicked NotifyMe on Canal+ Foot → "You'll be notified when Canal+ Foot goes live" appears in bell dropdown
+- /live shows 70 curated best channels (featured+trending+live), sorted by popularity
+- /profile shows user name, email, Free Plan badge, stats (favorites/watched/subscribed/notifications), edit form, favorite channels grid
+- URL routing works: ?view=home, ?view=live, ?view=admin, ?view=profile all load correct views
+- No paywall anywhere — "100% Free" banner replaces premium upsell
+- Lint clean, dev server running, all browser-verified

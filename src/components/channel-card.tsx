@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Play, Heart, Radio, Tv } from 'lucide-react';
+import { Play, Heart, Radio, Tv, Bell } from 'lucide-react';
 import type { ChannelDTO } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/lib/store';
@@ -18,7 +18,10 @@ interface Props {
 export function ChannelCard({ channel, className, compact }: Props) {
   const openPlayer = useApp((s) => s.openPlayer);
   const bumpRefresh = useApp((s) => s.bumpRefresh);
+  const openAuth = useApp((s) => s.openAuth);
+  const authUser = useApp((s) => s.authUser);
   const [fav, setFav] = useState(channel.isFavorite);
+  const [subscribed, setSubscribed] = useState(channel.isSubscribed);
 
   async function toggleFav(e: React.MouseEvent) {
     e.stopPropagation();
@@ -35,6 +38,24 @@ export function ChannelCard({ channel, className, compact }: Props) {
     } else {
       toast.success(next ? 'Added to favorites' : 'Removed from favorites');
       bumpRefresh();
+    }
+  }
+
+  async function toggleNotify(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!authUser) {
+      openAuth('signup');
+      return;
+    }
+    const next = !subscribed;
+    setSubscribed(next);
+    const res = await apiAction('POST', `/api/channels/${channel.id}/notify`);
+    if (res.ok) {
+      toast.success(next ? `You'll be notified when ${channel.displayName} goes live` : 'Notifications disabled');
+      bumpRefresh();
+    } else {
+      setSubscribed(!next);
+      toast.error(res.error || 'Failed');
     }
   }
 
@@ -81,16 +102,27 @@ export function ChannelCard({ channel, className, compact }: Props) {
           </div>
         )}
 
-        {/* favorite */}
-        <button
-          onClick={toggleFav}
-          aria-label="Toggle favorite"
-          className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 backdrop-blur transition-colors hover:bg-black/70"
-        >
-          <Heart
-            className={cn('h-3.5 w-3.5', fav ? 'fill-red-500 text-red-500' : 'text-white')}
-          />
-        </button>
+        {/* notify + favorite */}
+        <div className="absolute right-2 top-2 flex gap-1">
+          <button
+            onClick={toggleNotify}
+            aria-label="Notify when live"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-black/50 backdrop-blur transition-colors hover:bg-black/70"
+          >
+            <Bell
+              className={cn('h-3.5 w-3.5', subscribed ? 'fill-amber-500 text-amber-500' : 'text-white')}
+            />
+          </button>
+          <button
+            onClick={toggleFav}
+            aria-label="Toggle favorite"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-black/50 backdrop-blur transition-colors hover:bg-black/70"
+          >
+            <Heart
+              className={cn('h-3.5 w-3.5', fav ? 'fill-red-500 text-red-500' : 'text-white')}
+            />
+          </button>
+        </div>
       </div>
 
       {/* info */}

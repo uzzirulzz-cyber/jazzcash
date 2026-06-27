@@ -69,6 +69,7 @@ model Channel {
   watchHistory  WatchHistory[]
   continueWatching ContinueWatching[]
   subscriptions  ChannelSubscription[]
+  notifications  Notification[]
 
   @@index([category])
   @@index([subcategory])
@@ -187,7 +188,8 @@ model Notification {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel Channel? @relation(fields: [channelId], references: [id], onDelete: SetNull)
   @@index([userId, read, createdAt])
   @@index([userId, createdAt])
 }

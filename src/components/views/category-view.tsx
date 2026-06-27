@@ -33,8 +33,13 @@ export function CategoryView({ viewId }: Props) {
   const categoryName = isLive ? null : viewId === 'other-sports' ? 'Other Sports' : viewId.charAt(0).toUpperCase() + viewId.slice(1);
 
   const params = new URLSearchParams({ limit: '300' });
-  if (isLive) params.set('liveNow', 'true');
-  else if (categoryName) params.set('category', categoryName);
+  if (isLive) {
+    // Curated live page: only the best working channels (featured/trending/live)
+    params.set('curated', 'true');
+    params.set('sort', 'viewCount');
+  } else if (categoryName) {
+    params.set('category', categoryName);
+  }
   if (subcategory) params.set('subcategory', subcategory);
 
   const { data, loading } = useFetch<{ channels: ChannelDTO[]; total: number }>(
@@ -42,7 +47,7 @@ export function CategoryView({ viewId }: Props) {
     [refreshTick, subcategory],
   );
 
-  const meta = categoryName ? CATEGORY_META[categoryName] : { label: 'Live Now', icon: <Radio className="h-5 w-5" />, accent: 'text-red-500', desc: 'Channels streaming live right now' };
+  const meta = categoryName ? CATEGORY_META[categoryName] : { label: 'Live Now', icon: <Radio className="h-5 w-5" />, accent: 'text-red-500', desc: 'Curated best & working channels streaming live right now' };
 
   // collect unique subcategories from fetched channels for the filter chips
   const subcats = useMemo(() => {

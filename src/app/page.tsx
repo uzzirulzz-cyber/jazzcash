@@ -8,18 +8,31 @@ import { CategoryView } from '@/components/views/category-view';
 import { SearchView } from '@/components/views/search-view';
 import { LibraryView } from '@/components/views/library-view';
 import { AdminView } from '@/components/views/admin-view';
+import { ProfileView } from '@/components/views/profile-view';
 import { apiAction } from '@/hooks/use-fetch';
 
 export default function Home() {
   const view = useApp((s) => s.view);
   const searchQuery = useApp((s) => s.searchQuery);
+  const setView = useApp((s) => s.setView);
 
   // Ensure the database is seeded on first load + track page view for RPM.
   useEffect(() => {
     apiAction('POST', '/api/seed').catch(() => {});
-    // Fire-and-forget page view tracking (drives revenue-per-mille calc).
     fetch('/api/revenue?track=pageview', { method: 'GET' }).catch(() => {});
   }, []);
+
+  // Sync view with browser back/forward (popstate).
+  useEffect(() => {
+    function onPop() {
+      const params = new URLSearchParams(window.location.search);
+      const v = params.get('view');
+      if (v) setView(v as never);
+      else setView('home');
+    }
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [setView]);
 
   return (
     <AppShell>
@@ -32,6 +45,7 @@ export default function Home() {
       {view === 'search' && <SearchView key={searchQuery} />}
       {view === 'favorites' && <LibraryView mode="favorites" />}
       {view === 'history' && <LibraryView mode="history" />}
+      {view === 'profile' && <ProfileView />}
       {view === 'admin' && <AdminView />}
     </AppShell>
   );

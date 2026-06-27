@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Hls from 'hls.js';
 import {
-  X, Minimize2, Maximize2, Maximize, Minimize, Heart, Radio,
+  X, Minimize2, Maximize2, Maximize, Minimize, Heart, Radio, Bell,
   Loader2, AlertTriangle, Volume2, VolumeX, Settings, Tv,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
@@ -28,11 +28,13 @@ export function IptvPlayer() {
   const [currentLevel, setCurrentLevel] = useState(-1);
   const [showSettings, setShowSettings] = useState(false);
   const [fav, setFav] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
 
-  // sync favorite state with current channel
+  // sync favorite + subscription state with current channel
   useEffect(() => {
     setFav(playerChannel?.isFavorite ?? false);
+    setSubscribed(playerChannel?.isSubscribed ?? false);
   }, [playerChannel]);
 
   // load the stream whenever the channel changes
@@ -200,6 +202,24 @@ export function IptvPlayer() {
     }
   }
 
+  async function toggleNotify() {
+    if (!playerChannel) return;
+    const authUser = useApp.getState().authUser;
+    if (!authUser) {
+      useApp.getState().openAuth('signup');
+      return;
+    }
+    const next = !subscribed;
+    setSubscribed(next);
+    const res = await apiAction('POST', `/api/channels/${playerChannel.id}/notify`);
+    if (res.ok) {
+      toast.success(next ? `You'll be notified when ${playerChannel.displayName} goes live` : 'Notifications disabled');
+    } else {
+      setSubscribed(!next);
+      toast.error(res.error || 'Failed');
+    }
+  }
+
   const channel = playerChannel;
 
   return (
@@ -234,6 +254,13 @@ export function IptvPlayer() {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <button
+              onClick={toggleNotify}
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-white/80 hover:bg-white/10"
+              aria-label="Notify when live"
+            >
+              <Bell className={cn('h-4 w-4', subscribed && 'fill-amber-500 text-amber-500')} />
+            </button>
             <button
               onClick={toggleFav}
               className="flex h-9 w-9 items-center justify-center rounded-lg text-white/80 hover:bg-white/10"

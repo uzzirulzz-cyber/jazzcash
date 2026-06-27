@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
   const featured = searchParams.get('featured');
   const trending = searchParams.get('trending');
   const liveNow = searchParams.get('liveNow');
+  const curated = searchParams.get('curated');
   const enabled = searchParams.get('enabled');
   const q = searchParams.get('q') || undefined;
   const limit = Math.min(Number(searchParams.get('limit')) || 60, 500);
@@ -37,6 +38,14 @@ export async function GET(req: NextRequest) {
   if (featured === 'true') where.featured = true;
   if (trending === 'true') where.trending = true;
   if (liveNow === 'true') where.liveNow = true;
+  if (curated === 'true') {
+    // Curated = best working channels (featured OR trending OR live now)
+    where.OR = [
+      { featured: true },
+      { trending: true },
+      { liveNow: true },
+    ];
+  }
   if (enabled !== 'false') where.enabled = true; // default: only enabled
   if (enabled === 'false') where.enabled = false;
   if (q) {

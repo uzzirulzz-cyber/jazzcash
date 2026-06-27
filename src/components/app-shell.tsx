@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import {
   Home, Radio, Trophy, Target, Swords, Medal, Search, Heart,
-  History, Settings, Menu, Sun, Moon, Tv, RefreshCw, X,
+  History, Settings, Menu, Sun, Moon, Tv, RefreshCw, X, UserCircle, Bell,
 } from 'lucide-react';
 import { useApp, type ViewId } from '@/lib/store';
 import { useTheme } from 'next-themes';
@@ -14,6 +14,9 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from '@/components/ui/sheet';
 import { IptvPlayer } from './iptv-player';
+import { AuthDialog } from './auth-dialog';
+import { UserMenu } from './user-menu';
+import { NotificationsBell } from './notifications-bell';
 import { useFetch } from '@/hooks/use-fetch';
 import { apiAction } from '@/hooks/use-fetch';
 import { toast } from 'sonner';
@@ -41,6 +44,7 @@ const MAIN_NAV: NavItem[] = [
 const LIBRARY_NAV: NavItem[] = [
   { id: 'favorites', label: 'Favorites', icon: <Heart className="h-4 w-4" /> },
   { id: 'history', label: 'Watch History', icon: <History className="h-4 w-4" /> },
+  { id: 'profile', label: 'My Profile', icon: <UserCircle className="h-4 w-4" /> },
 ];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
@@ -211,6 +215,7 @@ function TopBar() {
       </form>
 
       <div className="ml-auto flex items-center gap-1">
+        <NotificationsBell />
         <Button
           variant="ghost"
           size="icon"
@@ -220,6 +225,7 @@ function TopBar() {
           <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
         </Button>
+        <UserMenu />
       </div>
     </header>
   );
@@ -243,6 +249,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <IptvPlayer />
+      <AuthDialog />
     </div>
   );
 }

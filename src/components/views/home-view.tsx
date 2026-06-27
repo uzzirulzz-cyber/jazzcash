@@ -185,10 +185,10 @@ export function HomeView() {
         <AdBanner placement="sponsored-rail" />
       </div>
 
-      {/* Premium upsell + trending hashtags grid */}
+      {/* Free access banner + trending hashtags grid */}
       <div className="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <PremiumUpsell />
+          <FreeAccessBanner />
         </div>
         <HashtagsWidget />
       </div>
@@ -273,9 +273,9 @@ function HeroBanner({ channel, onPlay }: { channel: ChannelDTO; onPlay: () => vo
   );
 }
 
-function PremiumUpsell() {
-  const setView = useApp((s) => s.setView);
-  const setAdminTab = useApp((s) => s.setAdminTab);
+function FreeAccessBanner() {
+  const openAuth = useApp((s) => s.openAuth);
+  const authUser = useApp((s) => s.authUser);
   return (
     <div className="relative h-full overflow-hidden rounded-2xl border border-brand/40 bg-gradient-to-br from-brand/15 via-card to-card p-6">
       <div className="absolute -right-8 -top-8 opacity-10">
@@ -283,20 +283,26 @@ function PremiumUpsell() {
       </div>
       <div className="relative">
         <Badge className="brand-bg mb-3 gap-1">
-          <Crown className="h-3 w-3" /> Go Premium
+          <Crown className="h-3 w-3" /> 100% Free
         </Badge>
         <h3 className="text-xl font-extrabold tracking-tight sm:text-2xl">
-          Unlock 4K Ultra HD, Ad-Free & All Sports Archives
+          All Sports. All Channels. No Subscription Fee.
         </h3>
         <p className="mt-2 max-w-md text-sm text-muted-foreground">
-          Watch every Premier League, IPL, WWE & UFC event in stunning 4K with zero ads.
-          Download for offline and get early access to PPV events.
+          Watch every Premier League, IPL, WWE & UFC event live in HD — completely free.
+          Create an account to save favorites, get live notifications & sync across devices.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <Button onClick={() => { setAdminTab('settings'); setView('admin'); }} className="gap-2">
-            <Crown className="h-4 w-4" /> Upgrade Now — $9.99/mo
-          </Button>
-          <span className="text-xs text-muted-foreground">7-day free trial · Cancel anytime</span>
+          {!authUser ? (
+            <>
+              <Button onClick={() => openAuth('signup')} className="gap-2">
+                <Crown className="h-4 w-4" /> Sign Up Free
+              </Button>
+              <span className="text-xs text-muted-foreground">No credit card · No subscription · Unlimited streaming</span>
+            </>
+          ) : (
+            <span className="text-sm font-medium text-brand">✓ You're all set — enjoy unlimited free streaming!</span>
+          )}
         </div>
       </div>
     </div>
