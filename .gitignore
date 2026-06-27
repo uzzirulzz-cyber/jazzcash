@@ -52,3 +52,13 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Database (SQLite — created fresh on deploy via prisma db push)
+/db/*.db
+/db/*.db-journal
+
+# User-uploaded logos
+/public/uploads/
+
+# Screenshots
+screenshot-*.png
