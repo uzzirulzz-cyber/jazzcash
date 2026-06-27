@@ -323,6 +323,38 @@ export function IptvPlayer() {
     }
   }
 
+  /** Find the next working channel in the same category and play it. */
+  async function tryNextChannel() {
+    if (!playerChannel) return;
+    setLoading(true);
+    setError(null);
+    try {
+      // Fetch working channels in the same category
+      const params = new URLSearchParams({
+        working: 'true',
+        limit: '20',
+        sort: 'viewCount',
+      });
+      if (playerChannel.category) params.set('category', playerChannel.category);
+      const res = await fetch(`/api/channels?${params.toString()}`);
+      const data = await res.json();
+      const channels: ChannelDTO[] = data.channels || [];
+      // Pick a random working channel that isn't the current one
+      const candidates = channels.filter((c) => c.id !== playerChannel.id);
+      if (candidates.length === 0) {
+        setLoading(false);
+        setError('No working channels found in this category. Try a different category or run a health probe in the Admin panel.');
+        return;
+      }
+      const next = candidates[Math.floor(Math.random() * candidates.length)];
+      toast.success(`Switching to: ${next.displayName}`);
+      useApp.getState().openPlayer(next);
+    } catch {
+      setLoading(false);
+      setError('Could not find a working channel. Please try again later.');
+    }
+  }
+
   const channel = playerChannel;
   const liveStream = !isFinite(duration) || duration === 0;
   const seekPct = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -410,12 +442,15 @@ export function IptvPlayer() {
                 <p className="text-base font-semibold text-white">Playback failed</p>
                 <p className="mt-1 max-w-md text-sm text-white/60">{error}</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap justify-center gap-2">
                 <button onClick={() => setRetryKey((k) => k + 1)} className="rounded-lg brand-bg px-4 py-2 text-sm font-semibold">Retry</button>
+                <button onClick={tryNextChannel} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                  Try Next Channel →
+                </button>
                 <button onClick={closePlayer} className="rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10">Close</button>
               </div>
               <p className="mt-2 max-w-md text-xs text-white/40">
-                Some IPTV streams are geo-blocked or temporarily offline. Try another channel from the same category.
+                This stream is geo-blocked or offline. Click <strong>Try Next Channel</strong> to automatically find a working stream in the same category.
               </p>
             </div>
           )}

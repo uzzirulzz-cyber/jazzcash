@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef } from 'react';
-import { Search, Pencil, Trash2, RefreshCw, Power, Star, Flame, Radio, Loader2, Wand2, Tv, Copy, Upload, Layers, X } from 'lucide-react';
+import { Search, Pencil, Trash2, RefreshCw, Power, Star, Flame, Radio, Loader2, Wand2, Tv, Copy, Upload, Layers, X, Activity } from 'lucide-react';
 import { useFetch, apiAction } from '@/hooks/use-fetch';
 import { useApp } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -72,6 +72,19 @@ export function ChannelsTab() {
     } else toast.error(res.error || 'Dedupe failed');
   }
 
+  const [probing, setProbing] = useState(false);
+  async function probeBatch() {
+    setProbing(true);
+    toast.info('Testing stream health (up to 100 channels)…');
+    const res = await apiAction('POST', '/api/admin/probe-batch', { limit: 100, featuredOnly: true });
+    setProbing(false);
+    if (res.ok) {
+      const r = res.data as { tested: number; working: number; broken: number };
+      toast.success(`Tested ${r.tested}: ${r.working} working, ${r.broken} broken`);
+      bumpRefresh(); refetch();
+    } else toast.error(res.error || 'Probe failed');
+  }
+
   const params = useMemo(() => {
     const p = new URLSearchParams({ limit: String(pageSize), offset: String(page * pageSize), enabled: 'any' });
     if (q) p.set('q', q);
@@ -120,6 +133,10 @@ export function ChannelsTab() {
             {plData?.playlists.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Button variant="outline" size="sm" onClick={probeBatch} disabled={probing} title="Test stream health for top channels">
+          {probing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Activity className="h-4 w-4" />}
+          Test Streams
+        </Button>
         <Button variant="outline" size="sm" onClick={dedupeAll} disabled={deduping} title="Remove duplicate channels across all playlists">
           {deduping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Copy className="h-4 w-4" />}
           Remove Duplicates

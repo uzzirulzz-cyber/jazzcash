@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Radio, Trophy, Target, Swords, Medal, Filter, Loader2, Tv } from 'lucide-react';
+import { Radio, Trophy, Target, Swords, Medal, Filter, Loader2, Tv, CheckCircle2 } from 'lucide-react';
 import { useFetch } from '@/hooks/use-fetch';
 import { useApp, type ViewId } from '@/lib/store';
 import { ChannelCard } from '@/components/channel-card';
@@ -27,6 +27,7 @@ export function CategoryView({ viewId }: Props) {
   const refreshTick = useApp((s) => s.refreshTick);
   const [subcategory, setSubcategory] = useState<string | null>(null);
   const [visible, setVisible] = useState(48);
+  const [workingOnly, setWorkingOnly] = useState(false);
 
   // Determine which category to fetch.
   const isLive = viewId === 'live';
@@ -34,12 +35,12 @@ export function CategoryView({ viewId }: Props) {
 
   const params = new URLSearchParams({ limit: '300' });
   if (isLive) {
-    // Live page: ALL enabled channels are marked live.
     params.set('liveNow', 'true');
     params.set('sort', 'viewCount');
   } else if (categoryName) {
     params.set('category', categoryName);
   }
+  if (workingOnly) params.set('working', 'true');
   if (subcategory) params.set('subcategory', subcategory);
 
   const { data, loading } = useFetch<{ channels: ChannelDTO[]; total: number }>(
@@ -79,6 +80,20 @@ export function CategoryView({ viewId }: Props) {
 
       {/* category banner ad */}
       <AdBanner placement="banner-category" />
+
+      {/* working-only toggle */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => { setWorkingOnly(!workingOnly); setVisible(48); }}
+          className={cn(
+            'flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+            workingOnly ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-border hover:bg-muted',
+          )}
+        >
+          <CheckCircle2 className="h-3 w-3" />
+          {workingOnly ? 'Showing Working Streams' : 'Show Working Streams Only'}
+        </button>
+      </div>
 
       {/* subcategory filter */}
       {!isLive && subcats.length > 0 && (

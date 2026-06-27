@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Play, Heart, Radio, Tv, Bell } from 'lucide-react';
+import { Play, Heart, Radio, Tv, Bell, CheckCircle2 } from 'lucide-react';
 import type { ChannelDTO } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/lib/store';
@@ -94,13 +94,21 @@ export function ChannelCard({ channel, className, compact }: Props) {
           </div>
         </div>
 
-        {/* live badge */}
-        {channel.liveNow && (
-          <div className="absolute left-2 top-2 flex items-center gap-1 rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
-            <Radio className="h-2.5 w-2.5 live-dot" />
-            LIVE
-          </div>
-        )}
+        {/* live badge + working badge */}
+        <div className="absolute left-2 top-2 flex flex-col gap-1">
+          {channel.liveNow && (
+            <div className="flex items-center gap-1 rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+              <Radio className="h-2.5 w-2.5 live-dot" />
+              LIVE
+            </div>
+          )}
+          {channel.status === 'online' && (
+            <div className="flex items-center gap-0.5 rounded bg-emerald-600/90 px-1 py-0.5 text-[9px] font-bold text-white">
+              <CheckCircle2 className="h-2.5 w-2.5" />
+              WORKING
+            </div>
+          )}
+        </div>
 
         {/* notify + favorite */}
         <div className="absolute right-2 top-2 flex gap-1">
