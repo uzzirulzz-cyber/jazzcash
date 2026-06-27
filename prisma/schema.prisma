@@ -1,0 +1,174 @@
+// Multi-M3U Sports Streaming Platform
+// Prisma schema (SQLite) — adapted from the MongoDB-based spec.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// IPTV playlist source (up to 3 independent M3U URLs).
+model Playlist {
+  id            String   @id @default(cuid())
+  name          String
+  url           String   @unique
+  /// active | refreshing | error | disabled
+  status        String   @default("active")
+  channelCount  Int      @default(0)
+  onlineCount   Int      @default(0)
+  offlineCount  Int      @default(0)
+  lastRefreshAt DateTime?
+  lastRefreshMs Int      @default(0)
+  nextRefreshAt DateTime?
+  /// cron-like: every 6 hours by default
+  refreshHours  Int      @default(6)
+  errorMessage  String?
+  enabled       Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  channels Channel[]
+  logs     ImportLog[]
+}
+
+/// A single channel parsed from an M3U playlist.
+model Channel {
+  id            String   @id @default(cuid())
+  name          String
+  displayName   String
+  url           String
+  logo          String?
+  /// auto | manual
+  categoryMode  String   @default("auto")
+  category      String   @default("Multi Sports")
+  subcategory   String?
+  country       String?
+  language      String?
+  tvgId         String?
+  tvgName       String?
+  groupTitle    String?
+  /// online | offline | unknown
+  status        String   @default("unknown")
+  enabled       Boolean  @default(true)
+  featured      Boolean  @default(false)
+  trending      Boolean  @default(false)
+  liveNow       Boolean  @default(false)
+  viewCount     Int      @default(0)
+  /// dedupe signature (lowercased name + host)
+  signature     String
+  sourceId      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  playlist Playlist @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  favorites     Favorite[]
+  watchHistory  WatchHistory[]
+  continueWatching ContinueWatching[]
+
+  @@index([category])
+  @@index([subcategory])
+  @@index([status])
+  @@index([enabled])
+  @@index([featured])
+  @@index([trending])
+  @@index([liveNow])
+  @@index([signature])
+  @@index([sourceId])
+}
+
+/// Hierarchical sports category. parentId empty => top level.
+model SportsCategory {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  parentId  String?
+  icon      String?
+  color     String?
+  /// comma-separated keywords used by the auto-mapper
+  keywords  String
+  /// custom admin-created category
+  isCustom  Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parentId])
+}
+
+/// Simple user (no auth in this demo — identified by a client cookie).
+model User {
+  id        String   @id @default(cuid())
+  cookie    String   @unique
+  name      String?
+  role      String   @default("viewer") // super_admin | admin | moderator | viewer
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  favorites       Favorite[]
+  watchHistory    WatchHistory[]
+  continueWatching ContinueWatching[]
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  channelId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, channelId])
+  @@index([userId])
+}
+
+model WatchHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  channelId String
+  position  Float    @default(0) // seconds
+  duration  Float    @default(0) // seconds
+  watchedAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([userId, watchedAt])
+  @@index([channelId])
+}
+
+model ContinueWatching {
+  id        String   @id @default(cuid())
+  userId    String
+  channelId String
+  position  Float    @default(0)
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  @@unique([userId, channelId])
+  @@index([userId])
+}
+
+model ImportLog {
+  id         String   @id @default(cuid())
+  playlistId String
+  status     String // success | error | partial
+  imported   Int     @default(0)
+  duplicates Int     @default(0)
+  errors     Int     @default(0)
+  message    String?
+  createdAt  DateTime @default(now())
+
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  @@index([playlistId, createdAt])
+}
+
+model Setting {
+  key   String @id
+  value String
+}
