@@ -1,18 +1,18 @@
 // Multi-M3U Sports Streaming Platform
-// Prisma schema (SQLite) — adapted from the MongoDB-based spec.
+// Prisma schema (MongoDB Atlas).
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 /// IPTV playlist source (up to 3 independent M3U URLs).
 model Playlist {
-  id            String   @id @default(cuid())
+  id            String   @id @map("_id") @default(cuid())
   name          String
   url           String   @unique
   /// active | refreshing | error | disabled
@@ -36,7 +36,7 @@ model Playlist {
 
 /// A single channel parsed from an M3U playlist.
 model Channel {
-  id            String   @id @default(cuid())
+  id            String   @id @map("_id") @default(cuid())
   name          String
   displayName   String
   url           String
@@ -85,7 +85,7 @@ model Channel {
 
 /// Hierarchical sports category. parentId empty => top level.
 model SportsCategory {
-  id        String   @id @default(cuid())
+  id        String   @id @map("_id") @default(cuid())
   name      String
   slug      String   @unique
   parentId  String?
@@ -104,7 +104,7 @@ model SportsCategory {
 
 /// User with full signup/login authentication.
 model User {
-  id        String   @id @default(cuid())
+  id        String   @id @map("_id") @default(cuid())
   cookie    String   @unique
   email     String?  @unique
   name      String?
@@ -122,7 +122,7 @@ model User {
 }
 
 model Favorite {
-  id        String   @id @default(cuid())
+  id        String   @id @map("_id") @default(cuid())
   userId    String
   channelId String
   createdAt DateTime @default(now())
@@ -135,7 +135,7 @@ model Favorite {
 }
 
 model WatchHistory {
-  id        String   @id @default(cuid())
+  id        String   @id @map("_id") @default(cuid())
   userId    String
   channelId String
   position  Float    @default(0) // seconds
@@ -150,7 +150,7 @@ model WatchHistory {
 }
 
 model ContinueWatching {
-  id        String   @id @default(cuid())
+  id        String   @id @map("_id") @default(cuid())
   userId    String
   channelId String
   position  Float    @default(0)
@@ -164,7 +164,7 @@ model ContinueWatching {
 
 /// User subscribes to a channel to get notified when it goes live.
 model ChannelSubscription {
-  id        String   @id @default(cuid())
+  id        String   @id @map("_id") @default(cuid())
   userId    String
   channelId String
   createdAt DateTime @default(now())
@@ -179,7 +179,7 @@ model ChannelSubscription {
 
 /// Notification sent to a user (e.g. "Channel X is now live").
 model Notification {
-  id        String   @id @default(cuid())
+  id        String   @id @map("_id") @default(cuid())
   userId    String
   channelId String?
   title     String
@@ -196,7 +196,7 @@ model Notification {
 }
 
 model ImportLog {
-  id         String   @id @default(cuid())
+  id         String   @id @map("_id") @default(cuid())
   playlistId String
   status     String // success | error | partial
   imported   Int     @default(0)
@@ -210,7 +210,7 @@ model ImportLog {
 }
 
 model Setting {
-  key   String @id
+  key   String @id @map("_id")
   value String
 }
 
@@ -220,7 +220,7 @@ model Setting {
 
 /// Ad slot configuration (banner, in-stream, sidebar, sponsored).
 model AdSlot {
-  id          String   @id @default(cuid())
+  id          String   @id @map("_id") @default(cuid())
   name        String
   /// banner-home | banner-category | in-stream | sidebar | sponsored-rail | interstitial
   placement   String
@@ -252,7 +252,7 @@ model AdSlot {
 
 /// Individual ad impression/click event — drives revenue calculations.
 model AdImpression {
-  id        String   @id @default(cuid())
+  id        String   @id @map("_id") @default(cuid())
   slotId    String
   userId    String?
   /// impression | click
@@ -268,7 +268,7 @@ model AdImpression {
 
 /// Subscription plan tier.
 model SubscriptionPlan {
-  id          String   @id @default(cuid())
+  id          String   @id @map("_id") @default(cuid())
   name        String
   /// free | premium | premium_plus | family
   tier        String   @unique
@@ -288,7 +288,7 @@ model SubscriptionPlan {
 
 /// A user subscription (active or expired).
 model Subscription {
-  id        String   @id @default(cuid())
+  id        String   @id @map("_id") @default(cuid())
   userId    String
   planId    String
   status    String   @default("active") // active | canceled | expired | past_due
@@ -304,7 +304,7 @@ model Subscription {
 
 /// Payment record (subscription + ad payouts + one-off).
 model Payment {
-  id         String   @id @default(cuid())
+  id         String   @id @map("_id") @default(cuid())
   userId     String?
   /// subscription | ad_revenue | donation | one_time
   type       String
@@ -322,7 +322,7 @@ model Payment {
 
 /// Daily revenue aggregate — one row per day, used for charts.
 model RevenueDaily {
-  id           String   @id
+  id           String   @id @map("_id")
   /// ISO date: YYYY-MM-DD
   date         String
   /// ad_impression | ad_click | subscription | donation | one_time
@@ -339,7 +339,7 @@ model RevenueDaily {
 
 /// Affiliate link / partner offer — earns commission on clicks + conversions.
 model AffiliateLink {
-  id          String   @id @default(cuid())
+  id          String   @id @map("_id") @default(cuid())
   name        String
   /// betting | merchandise | vpn | streaming_gear | ticketing | fantasy | other
   category    String   @default("other")
@@ -366,7 +366,7 @@ model AffiliateLink {
 
 /// Donation / tip jar contribution.
 model Donation {
-  id         String   @id @default(cuid())
+  id         String   @id @map("_id") @default(cuid())
   userId     String?
   amountCents Int
   currency   String   @default("USD")
@@ -382,7 +382,7 @@ model Donation {
 
 /// Sponsored channel placement — paid promotion in rails/grids.
 model SponsoredPlacement {
-  id        String   @id @default(cuid())
+  id        String   @id @map("_id") @default(cuid())
   channelId String
   /// home-rail | category-top | search-top | live-top
   placement String
@@ -403,7 +403,7 @@ model SponsoredPlacement {
 /// Raw traffic event — page views, sessions, unique visitors.
 /// Drives the RPM (revenue per mille) + traffic monetization calculator.
 model TrafficEvent {
-  id        String   @id @default(cuid())
+  id        String   @id @map("_id") @default(cuid())
   /// page_view | session_start | channel_view | search
   kind      String
   path      String?
