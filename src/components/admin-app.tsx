@@ -52,8 +52,8 @@ export function AdminApp() {
   // Logged in — show the admin panel.
   return (
     <div className="min-h-screen bg-background">
-      {/* Admin top bar */}
-      <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-lg">
+      {/* Admin top bar — NOT sticky, stays at top of page naturally */}
+      <header className="border-b border-border bg-background">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="PlayBeat Arena" className="h-8 w-8 rounded-lg object-contain" />
@@ -79,7 +79,7 @@ export function AdminApp() {
       </header>
 
       {/* Admin content */}
-      <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6">
+      <div className="mx-auto max-w-[1600px] px-4 pb-6 pt-6 sm:px-6">
         <AdminView />
       </div>
 
