@@ -1,16 +1,40 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   Trophy, Target, Swords, Film, Music, MonitorPlay, Radio, Play,
-  Search, Bell, Heart, Crown, ArrowRight, Check, Tv, Users, Zap,
+  Search, Bell, Heart, Crown, ArrowRight, Check, Tv, Zap, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+
+const HERO_SLIDES = [
+  {
+    image: '/hero-sports.jpg',
+    title: 'Live Sports,',
+    highlight: 'Without Limits',
+    subtitle: 'Watch 14,000+ channels — Football, Cricket, WWE, UFC & more in full HD',
+  },
+  {
+    image: '/hero-monsoon.jpg',
+    title: 'Movies, Music &',
+    highlight: 'Web Series',
+    subtitle: 'Hollywood, Bollywood, MTV, Drama, Documentaries — all free, all the time',
+  },
+];
 
 export function LandingView() {
   const setView = useApp((s) => s.setView);
   const openAuth = useApp((s) => s.openAuth);
+  const [slide, setSlide] = useState(0);
+
+  // Auto-rotate hero slides every 6 seconds.
+  useEffect(() => {
+    const t = setInterval(() => setSlide((s) => (s + 1) % HERO_SLIDES.length), 6000);
+    return () => clearInterval(t);
+  }, []);
 
   const sports = [
     { name: 'Football', icon: Trophy, color: 'text-emerald-500', desc: 'Premier League, Champions League, La Liga & more', view: 'football' as const },
@@ -37,55 +61,114 @@ export function LandingView() {
   return (
     <div className="min-h-screen bg-background">
       {/* Top bar */}
-      <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-lg">
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur-lg">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2.5">
             <img src="/logo.png" alt="PlayBeat Arena" className="h-9 w-9 rounded-lg object-contain" />
-            <span className="text-lg font-extrabold tracking-tight">PlayBeat Arena</span>
+            <span className="text-lg font-extrabold tracking-tight text-white">PlayBeat Arena</span>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => openAuth('login')} className="hidden sm:flex">Log in</Button>
+            <Button variant="ghost" size="sm" onClick={() => openAuth('login')} className="hidden text-white hover:bg-white/10 sm:flex">Log in</Button>
             <Button size="sm" onClick={() => openAuth('signup')} className="gap-1.5">Sign up free <ArrowRight className="h-3.5 w-3.5" /></Button>
           </div>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-brand/10 via-background to-background" />
-        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:py-32">
-          <div className="flex flex-col items-center text-center">
-            <img src="/logo.png" alt="PlayBeat Arena" className="mb-6 h-24 w-24 rounded-2xl object-contain shadow-2xl sm:h-32 sm:w-32" />
-            <Badge className="mb-4 brand-bg gap-1">
-              <Crown className="h-3 w-3" /> 100% Free · No Subscription · 14,000+ Live Channels
-            </Badge>
-            <h1 className="max-w-4xl text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
-              Watch <span className="gradient-text">Live Sports, Movies, Music</span> & Web Series — All Free
-            </h1>
-            <p className="mt-5 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              PlayBeat Arena merges multiple M3U playlists into one polished streaming experience.
-              Auto-categorized into Football, Cricket, Wrestling, Movies, Music and more.
-              Full HD, HLS adaptive playback, no signup required.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Button size="lg" onClick={() => setView('home')} className="gap-2 text-base">
-                <Play className="h-5 w-5 fill-current" /> Enter Platform
-              </Button>
-              <Button size="lg" variant="outline" onClick={() => setView('live')} className="gap-2 text-base">
-                <Radio className="h-5 w-5 text-red-500" /> Watch Live Now
-              </Button>
-            </div>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5 text-emerald-500" /> No credit card</span>
-              <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5 text-emerald-500" /> No ads on premium content</span>
-              <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5 text-emerald-500" /> Works on all devices</span>
+      {/* HERO SECTION — cinematic full-screen with rotating background images */}
+      <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
+        {/* Background image carousel */}
+        {HERO_SLIDES.map((s, i) => (
+          <div
+            key={i}
+            className="absolute inset-0 transition-opacity duration-1000"
+            style={{
+              opacity: i === slide ? 1 : 0,
+              backgroundImage: `url(${s.image})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+        ))}
+
+        {/* Dark gradient overlays for readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-black/40" />
+
+        {/* Slide navigation dots */}
+        <div className="absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+          {HERO_SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setSlide(i)}
+              className={cn(
+                'h-2 rounded-full transition-all',
+                i === slide ? 'w-8 bg-brand' : 'w-2 bg-white/40 hover:bg-white/60',
+              )}
+              aria-label={`Slide ${i + 1}`}
+            />
+          ))}
+        </div>
+
+        {/* Arrow controls */}
+        <button
+          onClick={() => setSlide((s) => (s - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
+          className="absolute left-4 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur transition-colors hover:bg-black/60 sm:left-8"
+          aria-label="Previous slide"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        <button
+          onClick={() => setSlide((s) => (s + 1) % HERO_SLIDES.length)}
+          className="absolute right-4 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur transition-colors hover:bg-black/60 sm:right-8"
+          aria-label="Next slide"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
+
+        {/* Hero content */}
+        <div className="relative z-10 mx-auto max-w-4xl px-4 py-32 text-center sm:px-6">
+          <img src="/logo.png" alt="PlayBeat Arena" className="mx-auto mb-6 h-20 w-20 rounded-2xl object-contain shadow-2xl sm:h-24 sm:w-24" />
+
+          <Badge className="mb-4 brand-bg gap-1">
+            <Crown className="h-3 w-3" /> 100% Free · 14,000+ Live Channels · No Subscription
+          </Badge>
+
+          {/* Animated title — slides in on slide change */}
+          <h1 key={slide} className="text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
+            {HERO_SLIDES[slide].title}{' '}
+            <span className="gradient-text">{HERO_SLIDES[slide].highlight}</span>
+          </h1>
+
+          <p className="mx-auto mt-5 max-w-2xl text-base text-white/80 sm:text-lg">
+            {HERO_SLIDES[slide].subtitle}
+          </p>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Button size="lg" onClick={() => setView('home')} className="gap-2 text-base shadow-2xl">
+              <Play className="h-5 w-5 fill-current" /> Enter Platform
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => setView('live')} className="gap-2 border-white/30 bg-black/30 text-base text-white backdrop-blur hover:bg-black/50 hover:text-white">
+              <Radio className="h-5 w-5 text-red-500" /> Watch Live Now
+            </Button>
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-white/60">
+            <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5 text-emerald-400" /> No credit card</span>
+            <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5 text-emerald-400" /> No ads on premium content</span>
+            <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5 text-emerald-400" /> Works on all devices</span>
+          </div>
+
+          {/* Scroll indicator */}
+          <div className="mt-16 flex justify-center">
+            <div className="flex h-10 w-6 items-start justify-center rounded-full border-2 border-white/30 p-1.5">
+              <div className="h-2 w-1 animate-bounce rounded-full bg-white/60" />
             </div>
           </div>
         </div>
       </section>
 
       {/* Sports Categories */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
         <div className="mb-8 text-center">
           <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Sports Categories</h2>
           <p className="mt-2 text-muted-foreground">Intelligently auto-categorized from your M3U playlists</p>
