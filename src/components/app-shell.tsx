@@ -19,6 +19,7 @@ import { AuthDialog } from './auth-dialog';
 import { UserMenu } from './user-menu';
 import { NotificationsBell } from './notifications-bell';
 import { InterstitialAd } from './interstitial-ad';
+import { DownloadAppButton } from './download-app';
 import { useFetch } from '@/hooks/use-fetch';
 import { apiAction } from '@/hooks/use-fetch';
 import { toast } from 'sonner';
@@ -275,13 +276,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 function Footer() {
   return (
     <footer className="mt-auto border-t border-border bg-background px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-sm text-muted-foreground sm:flex-row">
-        <div className="flex items-center gap-2">
-          <img src="/logo.png" alt="PlayBeat Arena" className="h-5 w-5 rounded object-contain" />
-          <span className="font-semibold text-foreground">PlayBeat Arena</span>
-          <span>· Multi-M3U Sports Streaming Platform</span>
+      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
+        <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2">
+            <img src="/logo.png" alt="PlayBeat Arena" className="h-5 w-5 rounded object-contain" />
+            <span className="font-semibold text-foreground">PlayBeat Arena</span>
+            <span className="hidden text-sm text-muted-foreground sm:inline">· Multi-M3U Sports Streaming</span>
+          </div>
         </div>
-        <p>Auto-refresh every 6h · Intelligent categorization · HLS adaptive streaming</p>
+        <div className="flex flex-col items-center gap-3 sm:flex-row">
+          <p className="hidden text-sm text-muted-foreground md:block">Auto-refresh every 6h · HLS adaptive streaming</p>
+          <DownloadAppButton variant="footer" />
+        </div>
       </div>
     </footer>
   );

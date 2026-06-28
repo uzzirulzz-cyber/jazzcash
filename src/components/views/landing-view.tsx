@@ -8,6 +8,7 @@ import {
 import { useApp } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { DownloadAppButton } from '@/components/download-app';
 import { cn } from '@/lib/utils';
 
 const HERO_SLIDES = [
@@ -268,14 +269,29 @@ export function LandingView() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:px-6">
-          <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="PlayBeat Arena" className="h-5 w-5 rounded object-contain" />
-            <span className="font-semibold text-foreground">PlayBeat Arena</span>
-            <span>· Multi-M3U Sports & Entertainment Streaming</span>
+      <footer className="border-t border-border bg-muted/30">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+          {/* Download app CTA */}
+          <div className="mb-6 flex flex-col items-center justify-between gap-4 rounded-2xl border border-brand/30 bg-gradient-to-r from-brand/10 to-card p-5 sm:flex-row">
+            <div className="flex items-center gap-3 text-center sm:text-left">
+              <img src="/android-chrome-192.png" alt="PlayBeat Arena" className="h-12 w-12 rounded-xl object-contain" />
+              <div>
+                <h3 className="text-base font-extrabold">Get the PlayBeat Arena App</h3>
+                <p className="text-sm text-muted-foreground">Install on your phone — 14,000+ channels, live notifications, 100% free</p>
+              </div>
+            </div>
+            <DownloadAppButton variant="landing" />
           </div>
-          <p>© 2025 PlayBeat Arena · All channels free · No subscription</p>
+
+          {/* Footer bottom */}
+          <div className="flex flex-col items-center justify-between gap-3 text-sm text-muted-foreground sm:flex-row">
+            <div className="flex items-center gap-2">
+              <img src="/logo.png" alt="PlayBeat Arena" className="h-5 w-5 rounded object-contain" />
+              <span className="font-semibold text-foreground">PlayBeat Arena</span>
+              <span>· Multi-M3U Sports & Entertainment Streaming</span>
+            </div>
+            <p>© 2025 PlayBeat Arena · All channels free · No subscription</p>
+          </div>
         </div>
       </footer>
     </div>
