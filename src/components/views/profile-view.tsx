@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ChannelCard } from '@/components/channel-card';
-import { EarningsDashboard } from '@/components/views/earnings-dashboard';
 import { toast } from 'sonner';
 import type { ChannelDTO } from '@/lib/types';
 
@@ -35,23 +34,19 @@ export function ProfileView() {
   const [newPass, setNewPass] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Not logged in — show signup prompt + earnings preview.
+  // Not logged in — show signup prompt.
   if (!authUser) {
     return (
-      <div className="space-y-5">
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-12 text-center">
-          <UserCircle className="mb-3 h-12 w-12 text-muted-foreground" />
-          <h2 className="text-xl font-bold">Sign up to view your profile</h2>
-          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-            Create a free account to access your favorites, watch history, live notifications & withdraw earnings.
-          </p>
-          <div className="mt-4 flex gap-2">
-            <Button onClick={() => openAuth('signup')}>Sign up free</Button>
-            <Button variant="outline" onClick={() => openAuth('login')}>Log in</Button>
-          </div>
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-12 text-center">
+        <UserCircle className="mb-3 h-12 w-12 text-muted-foreground" />
+        <h2 className="text-xl font-bold">Sign up to view your profile</h2>
+        <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+          Create a free account to access your favorites, watch history & live notifications.
+        </p>
+        <div className="mt-4 flex gap-2">
+          <Button onClick={() => openAuth('signup')}>Sign up free</Button>
+          <Button variant="outline" onClick={() => openAuth('login')}>Log in</Button>
         </div>
-        {/* Show earnings dashboard even when not logged in */}
-        <EarningsDashboard />
       </div>
     );
   }
@@ -149,9 +144,6 @@ export function ProfileView() {
           </CardContent>
         </Card>
       )}
-
-      {/* Earnings & withdrawals */}
-      <EarningsDashboard />
 
       {/* favorite channels */}
       <Card>
