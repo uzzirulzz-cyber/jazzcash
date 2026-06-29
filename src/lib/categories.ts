@@ -16,6 +16,19 @@ export interface CategoryDef {
 // The full hierarchy requested by the user.
 export const CATEGORY_TREE: CategoryDef[] = [
   {
+    name: 'Adult',
+    slug: 'adult',
+    icon: 'AlertOctagon',
+    color: 'text-red-600',
+    subcategories: [
+      { name: 'Adult Live', slug: 'adult-live', keywords: ['xxx', 'adult live', 'live xxx', 'pink tv', 'midnight', 'super one', 'superone', 'xtsy', 'fresh!', 'flirt', 'jktv'] },
+      { name: 'Adult Movies', slug: 'adult-movies', keywords: ['brazzers', 'playboy', 'hustler', 'redlight', 'private spice', 'venus', 'dhc', 'adult movie', 'xxx movie', 'erotic movie', 'porn'] },
+      { name: 'Adult Premium', slug: 'adult-premium', keywords: ['adult premium', 'xxx premium', 'erotic premium', 'babes', 'hentai', 'milf', 'orgasm', 'strip', 'nude', 'sex', 'erotic'] },
+      { name: 'Adult 18+', slug: 'adult-18-plus', keywords: ['18+', '18 plus', 'xxx', 'adult', 'porn'] },
+    ],
+    fallbackKeywords: ['xxx', 'adult', 'porn', '18+', 'erotic', 'sex', 'nude', 'brazzers', 'playboy', 'hustler', 'redlight', 'pink tv', 'babes', 'masturbat', 'orgasm', 'strip', 'milf', 'hentai', 'dhc', 'venus', 'super one', 'superone', 'midnight', 'private spice', 'xtsy', 'fresh!', 'flirt', 'jktv'],
+  },
+  {
     name: 'Football',
     slug: 'football',
     icon: 'Trophy',
@@ -152,31 +165,36 @@ export const CATEGORY_TREE: CategoryDef[] = [
 
 // Build the ordered rule list used by the auto-mapper.
 // Subcategory rules run first (higher priority), then parent fallback rules.
+// Adult rules get an even higher priority (200/20) so adult content always wins
+// over Movies/Sports regardless of other keyword matches.
 export const CATEGORY_RULES: CategoryRule[] = (() => {
   const rules: CategoryRule[] = [];
   for (const cat of CATEGORY_TREE) {
+    const isAdult = cat.name === 'Adult';
     for (const sub of cat.subcategories) {
       rules.push({
         category: cat.name,
         subcategory: sub.name,
         keywords: sub.keywords,
-        priority: 100,
+        priority: isAdult ? 200 : 100,
       });
     }
   }
   // parent fallback rules — lower priority
   for (const cat of CATEGORY_TREE) {
+    const isAdult = cat.name === 'Adult';
     rules.push({
       category: cat.name,
       subcategory: null,
       keywords: cat.fallbackKeywords,
-      priority: 10,
+      priority: isAdult ? 50 : 10,
     });
   }
   return rules;
 })();
 
 export const DEFAULT_SPORT_ICONS: Record<string, string> = {
+  Adult: 'AlertOctagon',
   Football: 'Trophy',
   Cricket: 'Target',
   Wrestling: 'Swords',
@@ -187,6 +205,7 @@ export const DEFAULT_SPORT_ICONS: Record<string, string> = {
 };
 
 export const DEFAULT_SPORT_COLORS: Record<string, string> = {
+  Adult: 'text-red-600',
   Football: 'text-emerald-500',
   Cricket: 'text-amber-500',
   Wrestling: 'text-rose-500',

@@ -4,10 +4,7 @@ import { Radio, Trophy, Target, Swords, Flame, Clock, Heart, CalendarClock, Chev
 import { useFetch } from '@/hooks/use-fetch';
 import { useApp } from '@/lib/store';
 import { ChannelRail } from '@/components/channel-rail';
-import { AdBanner } from '@/components/ad-banner';
 import { HashtagsWidget } from '@/components/hashtags-widget';
-import { AffiliateStorefront } from '@/components/affiliate-storefront';
-import { DonationWidget } from '@/components/donation-widget';
 import { RandomSections } from '@/components/random-sections';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,11 +45,6 @@ export function HomeView() {
       ) : hero ? (
         <HeroBanner channel={hero} onPlay={() => openPlayer(hero)} />
       ) : null}
-
-      {/* Home leaderboard ad */}
-      <div className="mb-8">
-        <AdBanner placement="banner-home" />
-      </div>
 
       {/* Upcoming events strip */}
       {data?.upcoming && data.upcoming.length > 0 && (
@@ -198,7 +190,7 @@ export function HomeView() {
       />
 
       {/* Random motivational/featured sections with uploaded images */}
-      <RandomSections count={2} />
+      <RandomSections count={3} />
 
       {/* Category-based rails: Music, Sports, Movies, Web Series */}
       <ChannelRail
@@ -250,25 +242,12 @@ export function HomeView() {
         }
       />
 
-      {/* Sponsored rail ad */}
-      <div className="mb-8">
-        <AdBanner placement="sponsored-rail" />
-      </div>
-
       {/* Free access banner + trending hashtags grid */}
       <div className="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <FreeAccessBanner />
         </div>
         <HashtagsWidget />
-      </div>
-
-      {/* Monetization: affiliate storefront + donation widget */}
-      <div className="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <AffiliateStorefront limit={6} />
-        </div>
-        <DonationWidget />
       </div>
 
       {/* empty state */}

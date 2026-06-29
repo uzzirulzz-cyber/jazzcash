@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Hls from 'hls.js';
+import mpegts from 'mpegts.js';
 import {
   X, Minimize2, Maximize2, Maximize, Minimize, Heart, Radio, Bell,
   Loader2, AlertTriangle, Volume2, VolumeX, Volume1, Settings, Tv,
@@ -26,6 +27,7 @@ export function IptvPlayer() {
   const { playerOpen, playerChannel, playerMinimized, closePlayer, minimizePlayer } = useApp();
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
+  const mpegtsRef = useRef<mpegts.Player | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const saveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hideControlsRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -74,8 +76,25 @@ export function IptvPlayer() {
       hlsRef.current.destroy();
       hlsRef.current = null;
     }
+    // cleanup previous mpegts player
+    if (mpegtsRef.current) {
+      try { mpegtsRef.current.destroy(); } catch { /* ignore */ }
+      mpegtsRef.current = null;
+    }
 
     const isM3u8 = /\.m3u8(\?|$)/i.test(channel.url) || channel.url.includes('m3u8');
+    // Xtream Codes live streams: URLs like /username/password/ID (no file
+    // extension) return a 302 redirect to an HLS .m3u8 stream. Treat them
+    // as HLS so hls.js handles the redirect + manifest.
+    const isXtreamLive = /\/[^/]+\/[^/]+\/\d+$/.test(channel.url) && !isM3u8;
+    const treatAsHls = isM3u8 || isXtreamLive;
+    // Raw MPEG-TS streams (.ts) — many Xtream/RTMP streams use this format.
+    // mpegts.js can play these directly in-browser (hls.js cannot).
+    const isMpegTs = /\.ts(\?|$)/i.test(channel.url) && !isM3u8;
+    // .mkv / .avi files can't be played natively by most browsers (Chrome/
+    // Firefox don't support Matroska). Show a clear error instead of failing
+    // silently.
+    const isUnsupportedFormat = /\.(mkv|avi|wmv|flv)(\?|$)/i.test(channel.url);
 
     // Geo-unblocker: proxy rewrites HLS manifests so ALL segment requests
     // also go through the server (bypassing geo-blocks on segment level).
@@ -83,17 +102,28 @@ export function IptvPlayer() {
     let triedProxy = false;
     setUnblockerActive(false);
 
-    // Strategy: ALWAYS use proxy first — the proxy rewrites HLS manifests so
-    // ALL segment requests go through the server, bypassing geo-blocks + CORS.
-    // This is more reliable than direct playback which fails on geo-blocked streams.
-    const useProxyFirst = true;
+    // Strategy: Try DIRECT playback first — the user's browser is on a
+    // residential IP that Cloudflare allows. Only fall back to the server
+    // proxy (which may be datacenter-IP-blocked) if direct fails.
+    // This is the fix for Cloudflare-protected IPTV servers like opplex.ch.
+    const useProxyFirst = false;
 
     const onReady = () => {
       setLoading(false);
       video.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
     };
 
-    if (isM3u8 && Hls.isSupported()) {
+    // Early exit for unsupported video formats (.mkv, .avi) — browsers can't
+    // play these natively without transcoding. Show a helpful error.
+    if (isUnsupportedFormat && !treatAsHls) {
+      setLoading(false);
+      setError(
+        'This channel is in .mkv format which web browsers cannot play. Try a live channel (Live Now section) instead — those use HLS which plays in-browser.',
+      );
+      return;
+    }
+
+    if (treatAsHls && Hls.isSupported()) {
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: true,
@@ -150,6 +180,52 @@ export function IptvPlayer() {
           );
         }
       });
+    } else if (isMpegTs && mpegts.isSupported()) {
+      // Raw MPEG-TS stream — use mpegts.js (same library iptvnator uses).
+      // hls.js can't play raw .ts, but mpegts.js can.
+      // Try direct first (user's residential IP bypasses Cloudflare).
+      try {
+        const player = mpegts.createPlayer({
+          type: 'mpegts',
+          url: channel.url,
+          isLive: true,
+        }, {
+          enableWorker: true,
+          lazyLoad: false,
+          autoCleanupSourceBuffer: true,
+        });
+        mpegtsRef.current = player;
+        player.attachMediaElement(video);
+        player.load();
+        player.on(mpegts.Events.ERROR, () => {
+          if (!triedProxy) {
+            // Fall back to server proxy
+            triedProxy = true;
+            try { player.destroy(); } catch { /* ignore */ }
+            const proxyPlayer = mpegts.createPlayer({
+              type: 'mpegts',
+              url: proxyUrl,
+              isLive: true,
+            }, { enableWorker: true, autoCleanupSourceBuffer: true });
+            mpegtsRef.current = proxyPlayer;
+            proxyPlayer.attachMediaElement(video);
+            proxyPlayer.load();
+            proxyPlayer.on(mpegts.Events.ERROR, () => {
+              setLoading(false);
+              setError('Stream is geo-blocked or offline. Try Next Channel to find a working stream.');
+            });
+            proxyPlayer.on('loading_complete', onReady);
+            video.addEventListener('loadedmetadata', onReady, { once: true });
+          } else {
+            setLoading(false);
+            setError('Stream is geo-blocked or offline. Try Next Channel to find a working stream.');
+          }
+        });
+        video.addEventListener('loadedmetadata', onReady, { once: true });
+      } catch {
+        setLoading(false);
+        setError('Failed to initialize MPEG-TS player. Try Next Channel.');
+      }
     } else {
       // native playback (Safari / direct mp4 / plain HLS)
       // Try direct first, fall back to proxy on error

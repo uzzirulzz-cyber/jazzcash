@@ -2,7 +2,7 @@
 
 import { useApp } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import { ListVideo, Tv, FolderTree, BarChart3, Settings, ShieldCheck, DollarSign, Megaphone } from 'lucide-react';
+import { ListVideo, Tv, FolderTree, BarChart3, Settings, ShieldCheck, DollarSign, Megaphone, Brain } from 'lucide-react';
 import { PlaylistsTab } from './admin/playlists-tab';
 import { ChannelsTab } from './admin/channels-tab';
 import { CategoriesTab } from './admin/categories-tab';
@@ -10,12 +10,14 @@ import { AnalyticsTab } from './admin/analytics-tab';
 import { SettingsTab } from './admin/settings-tab';
 import { RevenueDashboard } from './admin/revenue-dashboard';
 import { AdsTab } from './admin/ads-tab';
+import { AIMonetizationDashboard } from './admin/ai-monetization';
 
 const TABS = [
   { id: 'playlists', label: 'Playlists', icon: ListVideo },
   { id: 'channels', label: 'Channels', icon: Tv },
   { id: 'categories', label: 'Categories', icon: FolderTree },
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+  { id: 'monetization', label: 'Monetization AI', icon: Brain },
   { id: 'revenue', label: 'Revenue', icon: DollarSign },
   { id: 'ads', label: 'Ads', icon: Megaphone },
   { id: 'settings', label: 'Settings', icon: Settings },
@@ -63,6 +65,7 @@ export function AdminView() {
       {adminTab === 'channels' && <ChannelsTab />}
       {adminTab === 'categories' && <CategoriesTab />}
       {adminTab === 'analytics' && <AnalyticsTab />}
+      {adminTab === 'monetization' && <AIMonetizationDashboard />}
       {adminTab === 'revenue' && <RevenueDashboard />}
       {adminTab === 'ads' && <AdsTab />}
       {adminTab === 'settings' && <SettingsTab />}

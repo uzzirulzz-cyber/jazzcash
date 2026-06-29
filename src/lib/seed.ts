@@ -112,6 +112,58 @@ export async function ensureSeeded(): Promise<void> {
   // 5. Seed affiliate links + sponsored placements.
   await seedMonetizationExtras();
 
+  // 6. Seed membership plans.
+  const membershipCount = await db.membershipPlan.count();
+  if (membershipCount === 0) {
+    const plans = [
+      { name: 'Free', tier: 'free', priceCents: 0, interval: 'month', features: 'Watch all live channels\n720p quality\nAd-supported\n1 device', popular: false, sortOrder: 0 },
+      { name: 'Premium Monthly', tier: 'monthly', priceCents: 999, interval: 'month', features: 'Ad-free streaming\n1080p Full HD\nContinue watching\n2 devices\nPriority support', popular: true, sortOrder: 1 },
+      { name: 'Premium Quarterly', tier: 'quarterly', priceCents: 2499, interval: 'quarter', features: 'Everything in Monthly\nSave 17%\n3 months billing\nEarly access to PPV', popular: false, sortOrder: 2 },
+      { name: 'Premium Yearly', tier: 'yearly', priceCents: 7999, interval: 'year', features: 'Everything in Quarterly\nSave 33%\n12 months billing\n4K Ultra HD\n4 devices', popular: false, sortOrder: 3 },
+      { name: 'Lifetime', tier: 'lifetime', priceCents: 19999, interval: 'lifetime', features: 'One-time payment\nEverything in Yearly\nLifetime access\n6 devices\nAll future features', popular: false, sortOrder: 4 },
+      { name: 'Student', tier: 'student', priceCents: 499, interval: 'month', features: '50% student discount\nAd-free\n1080p HD\n1 device\nVerify with .edu email', popular: false, sortOrder: 5 },
+      { name: 'Family', tier: 'family', priceCents: 1999, interval: 'month', features: 'Up to 6 devices\n4K Ultra HD\nKids mode\nParental controls\nShared watchlist', popular: false, sortOrder: 6 },
+    ];
+    for (const p of plans) {
+      await db.membershipPlan.create({ data: p });
+    }
+  }
+
+  // 7. Seed IPTV packages (as products).
+  const productCount = await db.product.count();
+  if (productCount === 0) {
+    const products = [
+      { name: 'IPTV Basic Package', description: '5,000+ live channels, 720p, 1 device', type: 'iptv_sub', priceCents: 999, oldPriceCents: 1999, featured: true },
+      { name: 'IPTV Premium Package', description: '15,000+ channels, 1080p Full HD, 3 devices, EPG', type: 'iptv_sub', priceCents: 1999, oldPriceCents: 3499, featured: true },
+      { name: 'IPTV Ultimate Package', description: '25,000+ channels, 4K Ultra HD, 5 devices, VOD, EPG, Catch-up', type: 'iptv_sub', priceCents: 3499, oldPriceCents: 4999, featured: true },
+      { name: 'Sports Package Add-on', description: 'Premium sports channels: Sky Sports, ESPN, beIN, DAZN, WWE Network', type: 'iptv_sub', priceCents: 999, featured: false },
+      { name: 'Movies Package Add-on', description: 'Hollywood, Bollywood, Netflix originals, 4K movie library', type: 'iptv_sub', priceCents: 799, featured: false },
+      { name: 'Kids Package Add-on', description: 'Cartoon Network, Disney, Nickelodeon, educational channels', type: 'iptv_sub', priceCents: 499, featured: false },
+      { name: 'International Package', description: '200+ country-specific channels: UK, USA, India, Pakistan, UAE', type: 'iptv_sub', priceCents: 699, featured: false },
+      { name: 'PlayBeat Source Code', description: 'Full Next.js IPTV streaming platform source code with admin panel', type: 'source_code', priceCents: 29999, oldPriceCents: 49999, featured: true },
+      { name: 'IPTV Player Template', description: 'React HLS player template with PiP, quality selector, controls', type: 'template', priceCents: 4999, featured: false },
+      { name: 'Sports Streaming Plugin', description: 'WordPress plugin for embedding IPTV sports streams', type: 'plugin', priceCents: 2999, featured: false },
+    ];
+    for (const p of products) {
+      await db.product.create({ data: p });
+    }
+  }
+
+  // 8. Seed coupons.
+  const couponCount = await db.coupon.count();
+  if (couponCount === 0) {
+    const coupons = [
+      { code: 'WELCOME20', type: 'percent', value: 20, appliesTo: 'all', maxUses: 1000 },
+      { code: 'SPORTS50', type: 'percent', value: 50, appliesTo: 'IPTV', maxUses: 500 },
+      { code: 'FIRSTMONTH', type: 'fixed', value: 500, appliesTo: 'membership', maxUses: 2000 },
+      { code: 'BLACKFRIDAY', type: 'percent', value: 70, appliesTo: 'all', maxUses: 10000, expiresAt: new Date(Date.now() + 30 * 86400000) },
+      { code: 'FLASH10', type: 'percent', value: 10, appliesTo: 'marketplace', maxUses: 5000 },
+    ];
+    for (const c of coupons) {
+      await db.coupon.create({ data: c });
+    }
+  }
+
   // 5. Seed hidden admin accounts (founder / ceo / director).
   // Password is the same for all three; details are never exposed in the UI.
   const ADMINS = [

@@ -29,6 +29,21 @@ const FIREWALL_UAS = [
   'VLC/3.0.18 LibVLC/3.0.18',
 ];
 
+// Residential HTTP proxies — used as fallback when Cloudflare blocks the
+// sandbox's datacenter IP. These are free public proxies; they may be slow
+// or go offline. The firewall tries direct first, then falls back to these.
+const RESIDENTIAL_PROXIES = [
+  '178.212.144.7:80',
+  '159.203.61.169:3128',
+  '167.71.199.232:8080',
+  '165.22.36.164:10000',
+  '20.219.244.14:8080',
+];
+
+// Cache of working proxies (avoids re-testing dead ones every request)
+let workingProxyIndex = 0;
+const deadProxies = new Set<string>();
+
 // Rate limiting: track requests per IP to prevent abuse
 const requestCounts = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT = 100; // requests per minute per IP
@@ -74,17 +89,46 @@ function cacheManifest(url: string, content: Buffer, contentType: string): void 
 }
 
 /**
+ * Fetch a URL through a residential HTTP proxy. Used when Cloudflare blocks
+ * the sandbox's datacenter IP (returns 403). The proxy's residential IP is
+ * not on Cloudflare's blocklist, so the request succeeds.
+ * Uses undici's ProxyAgent (built into Node.js 18+) for proxy support.
+ */
+async function fetchViaProxy(url: string, proxy: string): Promise<{ body: Buffer; contentType: string } | null> {
+  try {
+    const { ProxyAgent } = await import('undici').catch(() => ({ ProxyAgent: null })) as { ProxyAgent: typeof import('undici').ProxyAgent | null };
+    if (!ProxyAgent) return null;
+    const agent = new ProxyAgent(`http://${proxy}`);
+    const res = await fetch(url, {
+      dispatcher: agent as never,
+      headers: {
+        'User-Agent': FIREWALL_UAS[0],
+        'Accept': '*/*',
+      },
+      signal: AbortSignal.timeout(12000),
+    });
+    if (!res.ok) return null;
+    const contentType = res.headers.get('content-type') || 'application/octet-stream';
+    const body = Buffer.from(await res.arrayBuffer());
+    return { body, contentType };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Firewall-protected stream fetch:
  * 1. Check manifest cache
  * 2. Try direct fetch with rotating UA
  * 3. Try with VLC/FFmpeg UA (some servers whitelist these)
- * 4. Return cached version if all live attempts fail (keeps stream "online")
+ * 4. Try residential proxies (bypasses Cloudflare datacenter IP blocks)
+ * 5. Return cached version if all live attempts fail (keeps stream "online")
  */
 export async function firewallFetch(url: string): Promise<{
   body: Buffer;
   contentType: string;
   cached: boolean;
-  source: 'cache' | 'direct' | 'alt-ua';
+  source: 'cache' | 'direct' | 'alt-ua' | 'proxy';
 }> {
   // 1. Check cache
   const cached = getCachedManifest(url);
@@ -146,7 +190,19 @@ export async function firewallFetch(url: string): Promise<{
     // continue
   }
 
-  // 4. Return stale cache if available (keeps stream "online" during brief outages)
+  // 4. Try residential proxies (bypasses Cloudflare datacenter IP blocks)
+  for (const proxy of RESIDENTIAL_PROXIES) {
+    if (deadProxies.has(proxy)) continue;
+    const result = await fetchViaProxy(url, proxy);
+    if (result) {
+      cacheManifest(url, result.body, result.contentType);
+      return { body: result.body, contentType: result.contentType, cached: false, source: 'proxy' };
+    }
+    // Mark this proxy as dead so we don't retry it
+    deadProxies.add(proxy);
+  }
+
+  // 5. Return stale cache if available (keeps stream "online" during brief outages)
   const staleCache = manifestCache.get(url);
   if (staleCache) {
     return {
@@ -228,5 +284,8 @@ export function getFirewallStats() {
     rateLimit: RATE_LIMIT,
     rateWindowSeconds: RATE_WINDOW / 1000,
     activeConnections: requestCounts.size,
+    residentialProxies: RESIDENTIAL_PROXIES.length,
+    deadProxies: deadProxies.size,
+    workingProxies: RESIDENTIAL_PROXIES.length - deadProxies.size,
   };
 }

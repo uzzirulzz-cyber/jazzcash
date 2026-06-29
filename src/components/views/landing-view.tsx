@@ -25,6 +25,18 @@ const HERO_SLIDES = [
     highlight: 'Web Series',
     subtitle: 'Hollywood, Bollywood, MTV, Drama, Documentaries — all free, all the time',
   },
+  {
+    image: '/section-tropical.jpg',
+    title: 'Tropical Vibes',
+    highlight: '& Chill Streams',
+    subtitle: 'Sunsets, palm trees & global music channels — escape into the vibe, 24/7 free',
+  },
+  {
+    image: '/section-portrait-elder.jpg',
+    title: 'Character-Driven',
+    highlight: 'Stories',
+    subtitle: 'Indie cinema, arthouse dramas & binge-worthy web series — streaming in HD',
+  },
 ];
 
 export function LandingView() {

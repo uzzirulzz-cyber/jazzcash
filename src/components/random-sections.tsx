@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Flame, TrendingUp, Bird, DollarSign, Trophy, Sparkles, ArrowRight } from 'lucide-react';
+import { Flame, TrendingUp, Bird, DollarSign, Trophy, Sparkles, ArrowRight, Music, Film, Heart, Sun, Palette } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
@@ -64,11 +64,56 @@ const SECTIONS: SectionCard[] = [
   {
     image: '/section-minimal.jpg',
     title: 'Stream in Style',
-    quote: 'Clean, fast, ad-light. PlayBeat Arena delivers 14,000+ channels in beautiful HD.',
+    quote: 'Clean, fast, ad-light. Stream2Arena delivers 14,000+ channels in beautiful HD.',
     cta: 'Start Watching',
     icon: <DollarSign className="h-5 w-5" />,
     accent: 'from-purple-500/30',
     view: 'home',
+  },
+  {
+    image: '/section-tropical.jpg',
+    title: 'Tropical Vibes',
+    quote: 'Sunsets, palm trees & chill streams. Escape into music, travel & lifestyle channels from around the world.',
+    cta: 'Explore Music',
+    icon: <Sun className="h-5 w-5" />,
+    accent: 'from-orange-500/30',
+    view: 'music',
+  },
+  {
+    image: '/section-onelove.jpg',
+    title: 'One Love — Reggae & World Music',
+    quote: 'Feel the rhythm. From reggae roots to global beats, stream the sounds that move you — 24/7, free.',
+    cta: 'Listen Now',
+    icon: <Music className="h-5 w-5" />,
+    accent: 'from-emerald-500/30',
+    view: 'music',
+  },
+  {
+    image: '/section-faith.jpg',
+    title: 'Faith & Spirituality',
+    quote: 'Inspirational, gospel & faith-based content. Stories of hope, devotion & grace — streaming free.',
+    cta: 'Watch Web Series',
+    icon: <Heart className="h-5 w-5" />,
+    accent: 'from-amber-500/30',
+    view: 'web-series',
+  },
+  {
+    image: '/section-portrait-woman.jpg',
+    title: 'Indie Cinema & Arthouse',
+    quote: 'Bold stories, unforgettable characters. Stream indie films, arthouse cinema & cult classics in HD.',
+    cta: 'Browse Movies',
+    icon: <Film className="h-5 w-5" />,
+    accent: 'from-rose-500/30',
+    view: 'movies',
+  },
+  {
+    image: '/section-portrait-elder.jpg',
+    title: 'Character-Driven Dramas',
+    quote: 'Stories with soul. Binge-worthy web series & dramas featuring complex, unforgettable characters.',
+    cta: 'Watch Series',
+    icon: <Palette className="h-5 w-5" />,
+    accent: 'from-violet-500/30',
+    view: 'web-series',
   },
   {
     image: '/section-sports-1.jpg',

@@ -18,7 +18,11 @@ const TRENDING_KW = [
   'premier league', 'champions league', 'ipl', 'psl', 'f1', 'nba', 'nfl',
 ];
 
-// Adult content keywords — channels matching these are EXCLUDED from import.
+// Adult content keywords — used to optionally EXCLUDE adult channels from import.
+// By default adult channels are NO LONGER excluded; they are auto-categorized
+// into the 'Adult' category (see src/lib/categories.ts) and shown behind an
+// age-gate in the UI. Set FILTER_ADULT=true to re-enable exclusion.
+const FILTER_ADULT = false;
 const ADULT_KW = [
   'xxx', 'adult', 'porn', '18+', '18 +', 'erotic', 'sex', 'nude', 'brazzers',
   'playboy', 'hustler', 'redlight', 'pink tv', 'babes', 'masturbat', 'orgasm',
@@ -33,6 +37,7 @@ function matchesAny(text: string, kws: string[]): boolean {
 
 /** Returns true if a channel name/group should be EXCLUDED (adult content). */
 function isAdultContent(name: string, groupTitle?: string): boolean {
+  if (!FILTER_ADULT) return false;
   const text = `${name} ${groupTitle ?? ''}`.toLowerCase();
   return ADULT_KW.some((k) => text.includes(k));
 }

@@ -10,6 +10,8 @@ interface AuthUser {
   email: string | null;
   name: string | null;
   role: string;
+  vip?: boolean;
+  vipExpiresAt?: string | null;
 }
 
 /** Hook that loads the current user on mount and exposes auth actions. */
@@ -28,8 +30,10 @@ export function useAuth() {
   async function signup(name: string, email: string, password: string) {
     const res = await apiAction('POST', '/api/auth/signup', { name, email, password });
     if (res.ok) {
-      setAuthUser(res.data as AuthUser);
-      toast.success(`Welcome to PlayBeat Arena, ${name}!`);
+      const data = res.data as { user?: AuthUser } | AuthUser;
+      const user = (data as { user?: AuthUser })?.user ?? (data as AuthUser);
+      setAuthUser(user);
+      toast.success(`Welcome to Stream2Arena, ${name}!`);
       closeAuth();
       bumpRefresh();
     } else {
@@ -41,8 +45,14 @@ export function useAuth() {
   async function login(email: string, password: string) {
     const res = await apiAction('POST', '/api/auth/login', { email, password });
     if (res.ok) {
-      setAuthUser(res.data as AuthUser);
-      toast.success('Logged in successfully');
+      const data = res.data as { user?: AuthUser } | AuthUser;
+      const user = (data as { user?: AuthUser })?.user ?? (data as AuthUser);
+      setAuthUser(user);
+      if (user.vip) {
+        toast.success('VIP login successful — unlocking Adult section');
+      } else {
+        toast.success('Logged in successfully');
+      }
       closeAuth();
       bumpRefresh();
     } else {

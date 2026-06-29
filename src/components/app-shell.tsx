@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import {
   Home, Radio, Trophy, Target, Swords, Medal, Search, Heart,
   History, Settings, Menu, Sun, Moon, Tv, RefreshCw, X, UserCircle, Bell,
-  Film, Music, MonitorPlay, Calendar,
+  Film, Music, MonitorPlay, Calendar, AlertOctagon,
 } from 'lucide-react';
 import { useApp, type ViewId } from '@/lib/store';
 import { useTheme } from 'next-themes';
@@ -18,10 +18,10 @@ import { IptvPlayer } from './iptv-player';
 import { AuthDialog } from './auth-dialog';
 import { UserMenu } from './user-menu';
 import { NotificationsBell } from './notifications-bell';
-import { InterstitialAd } from './interstitial-ad';
 import { DownloadAppButton } from './download-app';
-import { StickyBottomAd } from './sticky-bottom-ad';
-import { RevenueTicker } from './revenue-ticker';
+import { AgeGateModal } from './age-gate-modal';
+import { VipWall } from './vip-wall';
+import { BrandLogo } from './brand-logo';
 import { useFetch } from '@/hooks/use-fetch';
 import { apiAction } from '@/hooks/use-fetch';
 import { toast } from 'sonner';
@@ -45,6 +45,10 @@ const ENTERTAINMENT_NAV: NavItem[] = [
   { id: 'movies', label: 'Movies', icon: <Film className="h-4 w-4" />, accent: 'text-rose-500' },
   { id: 'music', label: 'Music', icon: <Music className="h-4 w-4" />, accent: 'text-purple-500' },
   { id: 'web-series', label: 'Web Series', icon: <MonitorPlay className="h-4 w-4" />, accent: 'text-cyan-500' },
+];
+
+const ADULT_NAV: NavItem[] = [
+  { id: 'adult', label: 'Adult (18+)', icon: <AlertOctagon className="h-4 w-4" />, accent: 'text-red-600' },
 ];
 
 const MAIN_NAV: NavItem[] = [
@@ -90,14 +94,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         onClick={() => go('home')}
         className="flex items-center gap-2.5 px-4 py-5"
       >
-        <img
-          src="/logo.png"
-          alt="PlayBeat Arena"
-          className="h-10 w-10 rounded-lg object-contain"
-        />
+        <BrandLogo size={40} />
         <div className="text-left">
-          <p className="text-base font-extrabold leading-none tracking-tight">PlayBeat Arena</p>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Multi-M3U IPTV</p>
+          <p className="text-base font-extrabold leading-none tracking-tight text-foreground">Stream2Arena</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-500">Live Sports &amp; TV</p>
         </div>
       </button>
 
@@ -119,6 +119,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         {/* entertainment */}
         <NavGroup label="Entertainment">
           {ENTERTAINMENT_NAV.map((item) => (
+            <NavButton key={item.id} item={item} active={view === item.id} onClick={() => go(item.id)} />
+          ))}
+        </NavGroup>
+
+        {/* adult — age-gated */}
+        <NavGroup label="Adult (18+)">
+          {ADULT_NAV.map((item) => (
             <NavButton key={item.id} item={item} active={view === item.id} onClick={() => go(item.id)} />
           ))}
         </NavGroup>
@@ -237,7 +244,6 @@ function TopBar() {
       </form>
 
       <div className="ml-auto flex items-center gap-1">
-        <RevenueTicker isAdmin={authUser?.role === 'super_admin' || authUser?.role === 'admin'} />
         <NotificationsBell />
         <Button
           variant="ghost"
@@ -273,8 +279,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <IptvPlayer />
       <AuthDialog />
-      <InterstitialAd />
-      <StickyBottomAd />
+      <AgeGateModal />
+      <VipWall />
     </div>
   );
 }
@@ -285,9 +291,9 @@ function Footer() {
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
         <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="PlayBeat Arena" className="h-5 w-5 rounded object-contain" />
-            <span className="font-semibold text-foreground">PlayBeat Arena</span>
-            <span className="hidden text-sm text-muted-foreground sm:inline">· Multi-M3U Sports Streaming</span>
+            <BrandLogo size={22} />
+            <span className="font-semibold text-foreground">Stream2Arena</span>
+            <span className="hidden text-sm text-muted-foreground sm:inline">· Live Sports &amp; TV</span>
           </div>
         </div>
         <div className="flex flex-col items-center gap-3 sm:flex-row">

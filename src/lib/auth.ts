@@ -23,7 +23,7 @@ export function verifyPassword(password: string, stored: string): boolean {
 }
 
 /** Get or create an anonymous session user (identified by a cookie). */
-export async function getSessionUser(): Promise<{ id: string; cookie: string; email: string | null; name: string | null; role: string }> {
+export async function getSessionUser(): Promise<{ id: string; cookie: string; email: string | null; name: string | null; role: string; vip: boolean; vipExpiresAt: Date | null }> {
   const cookieStore = await cookies();
   let cookie = cookieStore.get(COOKIE_NAME)?.value;
 
@@ -57,6 +57,8 @@ export async function getSessionUser(): Promise<{ id: string; cookie: string; em
     email: user.email,
     name: user.name,
     role: user.role,
+    vip: user.vip,
+    vipExpiresAt: user.vipExpiresAt,
   };
 }
 

@@ -111,6 +111,10 @@ model User {
   password  String?  // hashed (scrypt) — null for anonymous cookie users
   avatar    String?
   role      String   @default("viewer") // super_admin | admin | moderator | viewer
+  /// VIP membership — required to access the Adult section ($8/month)
+  vip       Boolean  @default(false)
+  /// When the VIP subscription expires (null = never / not VIP)
+  vipExpiresAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -481,4 +485,70 @@ model EventPurchase {
   @@unique([userId, eventId])
   @@index([userId])
   @@index([eventId])
+}
+
+/// Coupon / promo code for discounts.
+model Coupon {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  /// percent | fixed
+  type        String   @default("percent")
+  value       Int      @default(0) // percent off or cents off
+  /// IPTV | membership | marketplace | all
+  appliesTo   String   @default("all")
+  maxUses     Int      @default(100)
+  usedCount   Int      @default(0)
+  active      Boolean  @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([active])
+}
+
+/// Digital product for marketplace.
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  /// iptv_sub | software | template | plugin | ebook | graphic | source_code
+  type        String   @default("iptv_sub")
+  priceCents  Int
+  oldPriceCents Int?
+  imageUrl    String?
+  downloadUrl String?
+  featured    Boolean  @default(false)
+  active      Boolean  @default(true)
+  salesCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([type, active])
+  @@index([featured])
+}
+
+/// Premium membership plan.
+model MembershipPlan {
+  id          String   @id @default(cuid())
+  name        String
+  /// free | monthly | quarterly | yearly | lifetime | student | family
+  tier        String   @unique
+  priceCents  Int      @default(0)
+  interval    String   @default("month")
+  features    String   @default("")
+  popular     Boolean  @default(false)
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  subscriberCount Int  @default(0)
+  createdAt   DateTime @default(now())
+}
+
+/// Referral / affiliate tracking.
+model Referral {
+  id          String   @id @default(cuid())
+  referrerId  String
+  referredEmail String
+  status      String   @default("pending") // pending | converted | paid
+  commissionCents Int  @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([referrerId])
 }

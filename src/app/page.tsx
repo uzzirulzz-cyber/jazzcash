@@ -11,6 +11,7 @@ import { LibraryView } from '@/components/views/library-view';
 import { ProfileView } from '@/components/views/profile-view';
 import { AdminView } from '@/components/views/admin-view';
 import { EventsCalendar } from '@/components/views/events-calendar';
+import { AdultView } from '@/components/views/adult-view';
 import { AuthDialog } from '@/components/auth-dialog';
 import { IptvPlayer } from '@/components/iptv-player';
 import { apiAction } from '@/hooks/use-fetch';
@@ -24,18 +25,11 @@ export default function Home() {
   // Ensure the database is seeded + load auth state on first load.
   useEffect(() => {
     apiAction('POST', '/api/seed').catch(() => {});
-    fetch('/api/revenue?track=pageview', { method: 'GET' }).catch(() => {});
-    apiAction('POST', '/api/traffic', { kind: 'session_start', path: '/' }).catch(() => {});
     // Load current user so the landing page knows if you're logged in.
     fetch('/api/auth/me').then((r) => r.json()).then((d: { user: { id: string; email: string | null; name: string | null; role: string } | null }) => {
       if (d.user) setAuthUser(d.user);
     }).catch(() => {});
   }, [setAuthUser]);
-
-  // Track page view on every view change (drives RPM + revenue estimator).
-  useEffect(() => {
-    apiAction('POST', '/api/traffic', { kind: 'page_view', path: `/?view=${view}` }).catch(() => {});
-  }, [view]);
 
   // Sync view with browser back/forward (popstate).
   useEffect(() => {
@@ -71,6 +65,7 @@ export default function Home() {
       {view === 'movies' && <CategoryView viewId="movies" />}
       {view === 'music' && <CategoryView viewId="music" />}
       {view === 'web-series' && <CategoryView viewId="web-series" />}
+      {view === 'adult' && <AdultView />}
       {view === 'events' && <EventsCalendar />}
       {view === 'search' && <SearchView key={searchQuery} />}
       {view === 'favorites' && <LibraryView mode="favorites" />}

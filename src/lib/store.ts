@@ -14,6 +14,7 @@ export type ViewId =
   | 'movies'
   | 'music'
   | 'web-series'
+  | 'adult'
   | 'events'
   | 'search'
   | 'favorites'
@@ -27,11 +28,13 @@ interface AuthUser {
   email: string | null;
   name: string | null;
   role: string;
+  vip?: boolean;
+  vipExpiresAt?: string | null;
 }
 
 interface AppState {
   view: ViewId;
-  adminTab: 'playlists' | 'channels' | 'categories' | 'analytics' | 'revenue' | 'ads' | 'settings';
+  adminTab: 'playlists' | 'channels' | 'categories' | 'analytics' | 'monetization' | 'revenue' | 'ads' | 'settings';
   searchQuery: string;
   // player
   playerChannel: ChannelDTO | null;
@@ -43,6 +46,8 @@ interface AppState {
   authMode: 'login' | 'signup';
   // notifications
   unreadCount: number;
+  // VIP gate for Adult section — requires VIP membership ($8/mo)
+  pendingVipAccess: boolean;
   // navigation
   setView: (v: ViewId) => void;
   setAdminTab: (t: AppState['adminTab']) => void;
@@ -56,6 +61,9 @@ interface AppState {
   closeAuth: () => void;
   // notifications
   setUnreadCount: (n: number) => void;
+  // VIP gate actions
+  requestVipAccess: () => void;
+  cancelVipAccess: () => void;
   // refresh trigger (bumped to refetch data)
   refreshTick: number;
   bumpRefresh: () => void;
@@ -66,11 +74,11 @@ function getViewFromUrl(): ViewId {
   if (typeof window === 'undefined') return 'landing';
   const params = new URLSearchParams(window.location.search);
   const v = params.get('view') as ViewId | null;
-  const valid: ViewId[] = ['landing', 'home', 'live', 'football', 'cricket', 'wrestling', 'other-sports', 'movies', 'music', 'web-series', 'events', 'search', 'favorites', 'history', 'notifications', 'profile', 'admin'];
+  const valid: ViewId[] = ['landing', 'home', 'live', 'football', 'cricket', 'wrestling', 'other-sports', 'movies', 'music', 'web-series', 'adult', 'events', 'search', 'favorites', 'history', 'notifications', 'profile', 'admin'];
   return valid.includes(v as ViewId) ? (v as ViewId) : 'landing';
 }
 
-export const useApp = create<AppState>((set) => ({
+export const useApp = create<AppState>((set, get) => ({
   view: typeof window !== 'undefined' ? getViewFromUrl() : 'landing',
   adminTab: 'playlists',
   searchQuery: '',
@@ -81,7 +89,17 @@ export const useApp = create<AppState>((set) => ({
   authOpen: false,
   authMode: 'login',
   unreadCount: 0,
+  pendingVipAccess: false,
   setView: (v) => {
+    // VIP gate: clicking the Adult nav opens the VIP subscription wall
+    // unless the logged-in user is already a VIP member.
+    if (v === 'adult') {
+      const user = get().authUser;
+      if (!user?.vip) {
+        set({ pendingVipAccess: true });
+        return;
+      }
+    }
     // Update URL query param so it's shareable/bookmarkable.
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
@@ -96,10 +114,25 @@ export const useApp = create<AppState>((set) => ({
   openPlayer: (ch) => set({ playerChannel: ch, playerOpen: true, playerMinimized: false }),
   closePlayer: () => set({ playerOpen: false, playerChannel: null, playerMinimized: false }),
   minimizePlayer: (m) => set({ playerMinimized: m }),
-  setAuthUser: (u) => set({ authUser: u }),
+  setAuthUser: (u) => {
+    set({ authUser: u });
+    // If the user just became VIP (e.g. logged in as VIP), and they were
+    // waiting on the VIP gate, navigate to the Adult view.
+    if (u?.vip && get().pendingVipAccess) {
+      set({ pendingVipAccess: false });
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.set('view', 'adult');
+        window.history.replaceState({}, '', url.toString());
+      }
+      set({ view: 'adult' });
+    }
+  },
   openAuth: (mode) => set({ authOpen: true, authMode: mode }),
   closeAuth: () => set({ authOpen: false }),
   setUnreadCount: (n) => set({ unreadCount: n }),
+  requestVipAccess: () => set({ pendingVipAccess: true }),
+  cancelVipAccess: () => set({ pendingVipAccess: false }),
   refreshTick: 0,
   bumpRefresh: () => set((s) => ({ refreshTick: s.refreshTick + 1 })),
 }));

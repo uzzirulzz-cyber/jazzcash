@@ -27,6 +27,6 @@ export async function POST(req: NextRequest) {
   await setSessionCookie(user.cookie);
 
   return NextResponse.json({
-    user: { id: user.id, email: user.email, name: user.name, role: user.role },
+    user: { id: user.id, email: user.email, name: user.name, role: user.role, vip: user.vip, vipExpiresAt: user.vipExpiresAt },
   });
 }

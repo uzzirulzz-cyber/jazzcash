@@ -3,7 +3,6 @@
 import { useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ChannelCard } from './channel-card';
-import { NativeFeedAd } from './native-feed-ad';
 import type { ChannelDTO } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -78,7 +77,6 @@ export function ChannelRail({ title, icon, channels, loading, accent, action }: 
           {channels.map((ch, i) => (
             <div key={ch.id} className="flex shrink-0 gap-3">
               <ChannelCard channel={ch} />
-              {i === 5 && <NativeFeedAd />}
             </div>
           ))}
         </div>

@@ -5,15 +5,18 @@ import { getCurrentUser } from '@/lib/user';
 
 export const dynamic = 'force-dynamic';
 
-// GET /api/search?q=...&category=...&country=...&language=...
+// GET /api/search?q=...&category=...&country=...&language=...&includeAdult=true
 // Global search across channel name, league (subcategory), team, competition,
 // country, language and category.
+// Adult content is EXCLUDED by default — pass includeAdult=true to include it
+// (the Adult view passes this when the user has unlocked the age-gate).
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get('q') || '').trim();
   const category = searchParams.get('category') || undefined;
   const country = searchParams.get('country') || undefined;
   const language = searchParams.get('language') || undefined;
+  const includeAdult = searchParams.get('includeAdult') === 'true';
   const limit = Math.min(Number(searchParams.get('limit')) || 60, 200);
 
   const user = await getCurrentUser();
@@ -28,6 +31,11 @@ export async function GET(req: NextRequest) {
   if (category) where.category = category;
   if (country) where.country = country;
   if (language) where.language = language;
+  // Hide adult content unless explicitly requested (age-gate unlocked).
+  if (!includeAdult && category !== 'Adult') {
+    where.category = { not: 'Adult' };
+    if (category) where.category = category; // explicit category wins (except Adult handled above)
+  }
   if (q) {
     where.OR = [
       { name: { contains: q } },

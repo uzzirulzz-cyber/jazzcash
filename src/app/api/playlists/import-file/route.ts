@@ -5,13 +5,17 @@ import { categorizeChannel, channelSignature, detectCountry, detectLanguage } fr
 import { importPlaylist } from '@/lib/import-service';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 const FEATURED_KW = [
   'sky sports', 'tnt sports', 'bt sport', 'espn', 'eurosport', 'bein', 'willow',
   't sports', 'tsports', 'sony sports', 'fox sports', 'dazn', 'wwe', 'ufc',
   'f1 tv', 'premier league', 'champions league', 'supersport', 'sportsnet', 'tsn',
 ];
+// Adult channels are NO LONGER filtered out — they are auto-categorized into
+// the 'Adult' category (see src/lib/categories.ts) and shown behind an age-gate
+// in the UI. Set this to true to re-enable filtering (excludes adult entirely).
+const FILTER_ADULT = false;
 const ADULT_KW = [
   'xxx', 'adult', 'porn', '18+', 'erotic', 'sex', 'nude', 'brazzers', 'playboy',
   'hustler', 'redlight', 'pink tv', 'babes', 'masturbat', 'orgasm', 'strip',
@@ -71,9 +75,10 @@ export async function POST(req: NextRequest) {
   for (const ch of parsed) {
     if (!ch.url || !ch.name) { errors++; continue; }
 
-    // EXCLUDE adult content.
+    // Optionally filter adult content (disabled by default — adult channels are
+    // now categorized into the 'Adult' section instead of being excluded).
     const text2 = `${ch.name} ${ch.groupTitle ?? ''}`.toLowerCase();
-    if (ADULT_KW.some((k) => text2.includes(k))) { adultFiltered++; continue; }
+    if (FILTER_ADULT && ADULT_KW.some((k) => text2.includes(k))) { adultFiltered++; continue; }
 
     const sig = channelSignature(ch.name, ch.url);
     if (existingSigs.has(sig) || seenInThis.has(sig)) { duplicates++; continue; }

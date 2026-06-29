@@ -5,7 +5,6 @@ import { Radio, Trophy, Target, Swords, Medal, Filter, Loader2, Tv, CheckCircle2
 import { useFetch } from '@/hooks/use-fetch';
 import { useApp, type ViewId } from '@/lib/store';
 import { ChannelCard } from '@/components/channel-card';
-import { AdBanner } from '@/components/ad-banner';
 import { HashtagsWidget } from '@/components/hashtags-widget';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -83,9 +82,6 @@ export function CategoryView({ viewId }: Props) {
           {data?.total ?? 0} channels
         </Badge>
       </div>
-
-      {/* category banner ad */}
-      <AdBanner placement="banner-category" />
 
       {/* working-only toggle */}
       <div className="flex items-center gap-2">
