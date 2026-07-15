@@ -1,4 +1,0 @@
-{
-  "/api/admin/payrails-status/route": "app/api/admin/payrails-status/route.js",
-  "/api/payrails/token/route": "app/api/payrails/token/route.js"
-}

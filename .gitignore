@@ -1,2 +1,7 @@
 skills/
 node_modules/
+
+# Build artifacts (never commit)
+.next/
+next-env.d.ts
+.zscripts/
