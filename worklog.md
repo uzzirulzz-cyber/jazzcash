@@ -407,3 +407,42 @@ Stage Summary:
 - ✓ VLM-verified: Adult view shows header, VIP badge, 114 channels, channel cards, 18+ warning
 - ✓ Lint clean, all routes 200
 - Note: dev server is unstable (dies randomly during browser tests), but all functionality verified working when server is up
+
+---
+Task ID: PAYRAILS-PAYMENT-INTEGRATION
+Agent: main
+Task: User instruction — implement Payrails "Request an access token" API for VIP subscription payments
+
+Work Log:
+- Analyzed Payrails OpenAPI spec: POST /auth/token/{clientId} with x-api-key header → Bearer token (expires_in 3600s)
+- Created src/lib/payrails.ts — Payrails SDK helper:
+  * getPayrailsToken() — requests access token, caches in-memory with 60s safety margin
+  * payrailsFetch() — authenticated fetch wrapper (auto-attaches Bearer token)
+  * isPayrailsConfigured() — checks env vars
+  * getPayrailsEnv() — returns 'staging' or 'production'
+  * Base URL: https://api.staging.payrails.io (staging) or https://api.payrails.io (production)
+- Created src/app/api/payrails/token/route.ts — GET endpoint returns token to frontend
+  (for client-side payment flows like Payrails DropIn SDK)
+- Created src/app/api/admin/payrails-status/route.ts — admin endpoint to check
+  configuration + test token retrieval
+- Updated src/app/api/vip/subscribe/route.ts — now uses real Payrails:
+  * Production mode (configured): verifies executionId with Payrails before granting VIP
+  * Returns 402 Payment Required if no executionId (frontend must collect payment first)
+  * Mock mode (not configured): instant VIP for development
+  * Returns paymentMode: 'payrails' | 'mock' + amount/currency/plan
+- Created .env.example documenting all required env vars (committed, no secrets)
+- Added PAYRAILS_API_KEY, PAYRAILS_CLIENT_ID, PAYRAILS_ENV to .env (as comments)
+- Verified endpoints respond correctly:
+  * /api/admin/payrails-status → {"configured":false,"environment":"staging",...}
+  * /api/payrails/token → {"error":"Payrails not configured...",...}
+- Cleaned build artifacts (.next/, .zscripts/, next-env.d.ts) from git tracking
+- Committed and pushed to GitHub (commits 2089540 + fefe991)
+
+Stage Summary:
+- ✓ Payrails access token endpoint implemented per OpenAPI spec
+- ✓ Token caching with auto-refresh (expires_in based)
+- ✓ VIP subscribe now supports real Payrails payments (production) + mock mode (development)
+- ✓ Admin status endpoint for checking configuration
+- ✓ Pushed to GitHub: https://github.com/uzzirulzz-cyber/stream (commits 2089540, fefe991)
+- ⏳ Waiting for user to provide PAYRAILS_API_KEY + PAYRAILS_CLIENT_ID to activate real payments
+- Until configured, VIP subscribe works in mock mode (instant VIP, no real charge)
