@@ -4,7 +4,9 @@
 - Environments: .env
 
 ✓ Starting...
-✓ Ready in 1026ms
- GET /api/admin/jazzcash-status 200 in 887ms (compile: 864ms, render: 23ms)
- POST /api/jazzcash/session 503 in 246ms (compile: 240ms, render: 6ms)
-n 246ms (compile: 240ms, render: 6ms)
+✓ Ready in 1070ms
+prisma:query SELECT "public"."User"."id", "public"."User"."cookie", "public"."User"."email", "public"."User"."name", "public"."User"."password", "public"."User"."avatar", "public"."User"."role", "public"."User"."vip", "public"."User"."vipExpiresAt", "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /api/auth/login 200 in 2.4s (compile: 421ms, render: 1990ms)
+prisma:query SELECT "public"."User"."id", "public"."User"."cookie", "public"."User"."email", "public"."User"."name", "public"."User"."password", "public"."User"."avatar", "public"."User"."role", "public"."User"."vip", "public"."User"."vipExpiresAt", "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."cookie" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /api/jazzcash/session 200 in 508ms (compile: 43ms, render: 465ms)
+ 508ms (compile: 43ms, render: 465ms)
