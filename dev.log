@@ -4,8 +4,6 @@
 - Environments: .env
 
 ✓ Starting...
-✓ Ready in 1045ms
-○ Compiling / ...
- GET /api/admin/bankalfalah-status 200 in 1795ms (compile: 1771ms, render: 23ms)
- POST /api/bankalfalah/session 503 in 561ms (compile: 554ms, render: 7ms)
-n 561ms (compile: 554ms, render: 7ms)
+✓ Ready in 1164ms
+ GET /api/admin/bankalfalah-status 200 in 929ms (compile: 877ms, render: 52ms)
+ 929ms (compile: 877ms, render: 52ms)
